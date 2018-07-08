@@ -276,7 +276,7 @@ class VNC(object):
 
         self.typeSpecial(("escape",))
 
-        time.sleep(5)
+        time.sleep(2)
 
         # get screenshot
 
