@@ -4,11 +4,13 @@
 
 import socket
 import logging
+import time
 from time import sleep
 from Crypto.Cipher import DES
 from PIL import Image, ImageDraw
 
 from keyboard import key_codes
+
 
 def socket_receive(sock, size):
     res = b""
@@ -17,8 +19,10 @@ def socket_receive(sock, size):
 
     return res
 
+
 class VNCException(Exception):
     pass
+
 
 class VNC(object):
 
@@ -29,7 +33,8 @@ class VNC(object):
         self.timeout = timeout
 
     def connect(self):
-        self.sock = socket.create_connection((self.ip, self.port), timeout=self.timeout)
+        self.sock = socket.create_connection(
+            (self.ip, self.port), timeout=self.timeout)
 
         # == Banner ==
 
@@ -57,7 +62,6 @@ class VNC(object):
 
         # == Security types ==
 
-
         self.supported_security_types = []
 
         if major == 4 or (major, minor) in [(3, 7), (3, 8)]:
@@ -83,7 +87,8 @@ class VNC(object):
 
             for index in range(0, nb_security_types):
                 sec_type_id = int(resp[index])
-                self.supported_security_types.append(security_type_from_id(sec_type_id))
+                self.supported_security_types.append(
+                    security_type_from_id(sec_type_id))
                 logging.info("> %s" % security_type_from_id(sec_type_id))
         else:
             resp = socket_receive(self.sock, 4)
@@ -102,7 +107,8 @@ class VNC(object):
                 msg = resp.decode("utf-8")
                 raise VNCException(msg)
 
-            self.supported_security_types.append(security_type_from_id(sec_type_id))
+            self.supported_security_types.append(
+                security_type_from_id(sec_type_id))
             logging.info("> %s" % security_type_from_id(sec_type_id))
 
     def auth(self, auth_type, password=None):
@@ -130,7 +136,8 @@ class VNC(object):
                 raise VNCException("Wrong challenge length")
 
             logging.debug('challenge: %s' % challenge)
-            password = password.ljust(8, '\x00')[:8] # make sure it is 8 chars long, zero padded
+            # make sure it is 8 chars long, zero padded
+            password = password.ljust(8, '\x00')[:8]
 
             key = self.gen_key(password)
             logging.debug('key: %s' % key)
@@ -145,7 +152,7 @@ class VNC(object):
         logging.debug('resp: %s' % repr(resp))
 
         response_code = ord(resp[3:4])
-        mesg = resp[8:].decode('ascii', 'ignore')
+        _ = resp[8:].decode('ascii', 'ignore')
 
         if response_code == 0:
             self.authenticated = True
@@ -166,7 +173,8 @@ class VNC(object):
                 elif response_code == 2:
                     return response_code, "failed, too many attempts"
                 else:
-                    raise VNCException('Unknown response: %d' % (code))
+                    raise VNCException('Unknown response: %d' %
+                                       (response_code))
 
     def gen_key(self, key):
         newkey = []
@@ -194,32 +202,32 @@ class VNC(object):
         self.name = resp.decode()
 
         logging.info("Server name: %s" % self.name)
+        print("%s:%d\t%s" % (self.ip, self.port, self.name))
 
         # set pixel mode
 
         payload = b"\x00"
-        payload += b"\x00\x00\x00" # Padding
-        payload += (32).to_bytes(1, byteorder="big") # Pixel size
-        payload += (24).to_bytes(1, byteorder="big") # Depth
-        payload += (0).to_bytes(1, byteorder="big") # Big endian flag
-        payload += (1).to_bytes(1, byteorder="big") # True color flag
-        payload += (255).to_bytes(2, byteorder="big") # Red maximum
-        payload += (255).to_bytes(2, byteorder="big") # Green maximum
-        payload += (255).to_bytes(2, byteorder="big") # Blue maximum
-        payload += (0).to_bytes(1, byteorder="big") # Red shift
-        payload += (8).to_bytes(1, byteorder="big") # Green shift
-        payload += (16).to_bytes(1, byteorder="big") # Blue shift
-        payload += b"\x00\x00\x00" # Padding
+        payload += b"\x00\x00\x00"  # Padding
+        payload += (32).to_bytes(1, byteorder="big")  # Pixel size
+        payload += (24).to_bytes(1, byteorder="big")  # Depth
+        payload += (0).to_bytes(1, byteorder="big")  # Big endian flag
+        payload += (1).to_bytes(1, byteorder="big")  # True color flag
+        payload += (255).to_bytes(2, byteorder="big")  # Red maximum
+        payload += (255).to_bytes(2, byteorder="big")  # Green maximum
+        payload += (255).to_bytes(2, byteorder="big")  # Blue maximum
+        payload += (0).to_bytes(1, byteorder="big")  # Red shift
+        payload += (8).to_bytes(1, byteorder="big")  # Green shift
+        payload += (16).to_bytes(1, byteorder="big")  # Blue shift
+        payload += b"\x00\x00\x00"  # Padding
         self.sock.sendall(payload)
 
         # set encoding
 
         payload = b"\x02"
-        payload += b"\x00" # Padding
-        payload += (1).to_bytes(2, byteorder="big") # Number encoding
-        payload += (0).to_bytes(4, byteorder="big") # - Raw
+        payload += b"\x00"  # Padding
+        payload += (1).to_bytes(2, byteorder="big")  # Number encoding
+        payload += (0).to_bytes(4, byteorder="big")  # - Raw
         self.sock.sendall(payload)
-
 
     def typeSpecial(self, key_tuple):
 
@@ -231,7 +239,8 @@ class VNC(object):
             pressed_payload = b"\x04"
             pressed_payload += b"\x01"
             pressed_payload += b"\x00\x00"
-            pressed_payload += bytes([0, 0, int((keycode/0x100)%0x100), int(keycode % 0x100)])
+            pressed_payload += bytes([0, 0, int((keycode/0x100) %
+                                                0x100), int(keycode % 0x100)])
             self.sock.sendall(pressed_payload)
 
         for key in key_tuple:
@@ -241,7 +250,8 @@ class VNC(object):
             release_payload = b"\x04"
             release_payload += b"\x00"
             release_payload += b"\x00\x00"
-            release_payload += bytes([0, 0, int((keycode/0x100)%0x100), int(keycode % 0x100)])
+            release_payload += bytes([0, 0, int((keycode/0x100) %
+                                                0x100), int(keycode % 0x100)])
             self.sock.sendall(release_payload)
 
     def typeString(self, message):
@@ -266,20 +276,20 @@ class VNC(object):
 
         self.typeSpecial(("escape",))
 
-        sleep(1)
+        time.sleep(5)
 
         # get screenshot
 
         screenshot = Image.new("RGBA", (self.frame_width, self.frame_height))
 
-        draw = ImageDraw.Draw(screenshot)
+        _ = ImageDraw.Draw(screenshot)
 
         payload = b"\x03"
-        payload += b"\x00" # Padding
-        payload += (0).to_bytes(2, byteorder="big") # X offset
-        payload += (0).to_bytes(2, byteorder="big") # Y offset
-        payload += (self.frame_width).to_bytes(2, byteorder="big") # Width
-        payload += (self.frame_height).to_bytes(2, byteorder="big") # Height
+        payload += b"\x00"  # Padding
+        payload += (0).to_bytes(2, byteorder="big")  # X offset
+        payload += (0).to_bytes(2, byteorder="big")  # Y offset
+        payload += (self.frame_width).to_bytes(2, byteorder="big")  # Width
+        payload += (self.frame_height).to_bytes(2, byteorder="big")  # Height
         self.sock.sendall(payload)
 
         res = socket_receive(self.sock, 4)
@@ -293,6 +303,8 @@ class VNC(object):
             rect_height = int.from_bytes(res[6:8], byteorder="big")
             encoding = int.from_bytes(res[8:12], byteorder="big")
 
+            print(rect_x,rect_y,rect_width,rect_height,encoding)
+
             if encoding != 0:
                 raise VNCException("Unsupported encoding")
 
@@ -300,12 +312,18 @@ class VNC(object):
 
             rect = Image.frombytes("RGBA", (rect_width, rect_height), res)
 
-            screenshot.paste(rect, box=(rect_x, rect_y, rect_x+rect_width, rect_y+rect_height))
+            screenshot.paste(rect, box=(
+                rect_x, rect_y, rect_x+rect_width, rect_y+rect_height))
 
+
+        # OSError: cannot write mode RGBA as JPEG
+        # https://www.bountysource.com/issues/46873548-cannot-write-mode-rgba-as-jpeg-4-2-0
+        screenshot = screenshot.convert("RGB")
         return screenshot
 
     def disconnect(self):
         self.sock.close()
+
 
 def security_type_from_id(sec_type_id):
     if sec_type_id == 0:
@@ -343,6 +361,7 @@ def security_type_from_id(sec_type_id):
     elif sec_type_id >= 128 and sec_type_id <= 255:
         return "RealVNC"
 
+
 def getSpecialKeyCode(key):
 
     key_lower = key.lower()
@@ -377,4 +396,3 @@ def getSpecialKeyCode(key):
         return ord(key)
     else:
         return key_codes["XK_%s" % key]
-
