@@ -63,6 +63,7 @@ def process(ip, port, timeout, password_list, ducky_script):
 
                     # take screenshot
                     image = vnc.screenshot()
+
                     image_name = '{}_{}_{}.jpg'.format(
                         ip, port, datetime.datetime.now().strftime('%d-%m-%Y_%H-%M-%S'))
                     image.save(image_name)
