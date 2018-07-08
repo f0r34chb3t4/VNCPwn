@@ -312,6 +312,13 @@ class VNC(object):
 
             screenshot.paste(rect, box=(
                 rect_x, rect_y, rect_x+rect_width, rect_y+rect_height))
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+=======
+>>>>>>> 424821ba6b8f66f7fa602eb5680de0cacec34f1d
+>>>>>>> 1a82560ec1d451dee17dc15b0e7ff6d0eb632a7e
 
         # OSError: cannot write mode RGBA as JPEG
         # https://www.bountysource.com/issues/46873548-cannot-write-mode-rgba-as-jpeg-4-2-0
