@@ -83,8 +83,8 @@ def process(ip, port, timeout, password_list, ducky_script):
 
         vnc.disconnect()
 
-#    except (socket.timeout, ConnectionRefusedError, ConnectionResetError, OSError):
-#        pass
+    except (socket.timeout, ConnectionRefusedError, ConnectionResetError, OSError):
+        pass
     except VNCException as e:
         print("%s:%d\t%s" % (ip, port, e))
     except Exception as e:

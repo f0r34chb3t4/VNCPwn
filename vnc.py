@@ -303,8 +303,6 @@ class VNC(object):
             rect_height = int.from_bytes(res[6:8], byteorder="big")
             encoding = int.from_bytes(res[8:12], byteorder="big")
 
-            print(rect_x,rect_y,rect_width,rect_height,encoding)
-
             if encoding != 0:
                 raise VNCException("Unsupported encoding")
 
@@ -314,7 +312,6 @@ class VNC(object):
 
             screenshot.paste(rect, box=(
                 rect_x, rect_y, rect_x+rect_width, rect_y+rect_height))
-
 
         # OSError: cannot write mode RGBA as JPEG
         # https://www.bountysource.com/issues/46873548-cannot-write-mode-rgba-as-jpeg-4-2-0
