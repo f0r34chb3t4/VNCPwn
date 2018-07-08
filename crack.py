@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-
+#
 # Author: Hegusung
-
+#
 import argparse
-import datetime
-import socket
 import traceback
-from ipaddress import IPv4Network
+import socket
 from time import sleep
+from datetime import datetime
+from ipaddress import IPv4Network
 
 from vnc import VNC, VNCException
 
@@ -35,12 +35,8 @@ def process(ip, port, timeout, password_list, ducky_script):
 
                 # take screenshot
                 image = vnc.screenshot()
-
-                image_name = '{}_{}_{}.jpg'.format(
-                    ip, port, datetime.datetime.now().strftime('%d-%m-%Y_%H-%M-%S'))
-                image.save(image_name)
-                print("%s:%d\t%s as: %s" %
-                      (ip, port, "Screenshot taken", image_name))
+                image.save("%s_%d_%s.jpg" % (ip, port, str(datetime.utcnow())))
+                print("%s:%d\t%s" % (ip, port, "Screenshot taken"))
 
                 # execute ducky script
                 if ducky_script != None:
@@ -63,17 +59,9 @@ def process(ip, port, timeout, password_list, ducky_script):
 
                     # take screenshot
                     image = vnc.screenshot()
-<<<<<<< HEAD
-                    image_name = '{}_{}_{}.jpg'.format(
-                        ip, port, datetime.datetime.now().strftime('%d-%m-%Y_%H-%M-%S'))
-                    image.save(image_name)
-                    print("%s:%d\t%s as: %s" %
-                          (ip, port, "Screenshot taken", image_name))
-=======
                     image.save("%s_%d_%s.jpg" %
                                (ip, port, str(datetime.utcnow())))
                     print("%s:%d\t%s" % (ip, port, "Screenshot taken"))
->>>>>>> 424821ba6b8f66f7fa602eb5680de0cacec34f1d
 
                     # execute ducky script
                     if ducky_script != None:
@@ -89,13 +77,8 @@ def process(ip, port, timeout, password_list, ducky_script):
 
         vnc.disconnect()
 
-<<<<<<< HEAD
-#    except (socket.timeout, ConnectionRefusedError, ConnectionResetError, OSError):
-#        pass
-=======
     except (socket.timeout, ConnectionRefusedError, ConnectionResetError, OSError):
         pass
->>>>>>> 424821ba6b8f66f7fa602eb5680de0cacec34f1d
     except VNCException as e:
         print("%s:%d\t%s" % (ip, port, e))
     except Exception as e:
